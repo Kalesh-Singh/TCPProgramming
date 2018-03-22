@@ -49,18 +49,18 @@ int main() {
     fseek(fp, 0L, SEEK_END);
     long fileSize = ftell(fp);
     printf("File Size: %lu\n", fileSize);
-
+	uint8_t type;
     // Go back to the beginning of the file
     rewind(fp);
     printf("Current Offset: %lu\n", ftell(fp));
 
-    // int i = 0;
     while (ftell(fp) < fileSize - 1) {
-		//++i;
-        // printf("%d. %d\n", i, fgetc(fp));
+		printf("File size = %lu\n", fileSize);
+		printf("Current offset = %lu\n", ftell(fp));
 
         // Read the first byte of the file to determine the Type of the Unit
-        uint8_t type = (uint8_t) fgetc(fp);
+        type = (uint8_t) fgetc(fp);
+		printf("Test\n");
         printf("Type: %d\t", type);
 
         if (type == 0) {
@@ -71,18 +71,36 @@ int main() {
             // Get the Numbers in the Type 0 Unit
             uint16_t typeZeroBuffer[amount];
             fread(typeZeroBuffer, sizeof(uint16_t), amount, fp);
+			
+			// Convert from Big to Little Endian
+			int i;
+			for (int i = 0; i < amount; ++i) {
+				uint16_t lsb = typeZeroBuffer[i] << 8;
+				uint16_t msb = typeZeroBuffer[i] >> 8;
+				typeZeroBuffer[i] = lsb | msb;
+			}
 
             // Print the Numbers to the Screen
-            int i;
-            for (i = 0; i < (sizeof(typeZeroBuffer) / sizeof(uint16_t)); ++i) {
+            for (i = 0; i < amount; ++i) {
                 printf("%d ", typeZeroBuffer[i]);
             }
 			printf("\n");
+			printf("Finished processing a type 0\n");
 
         } else if (type == 1) {
             // Get the amount in the unit
             uint8_t amountBuffer[3];
             fread(amountBuffer, sizeof(uint8_t), 3, fp);
+			
+			// Check for valid read
+			int index;
+			for(index = 0; index < 3; ++index) {
+				if (amountBuffer[index] < 48 && amountBuffer[index] > 57) {
+					printf("Error: File is has INCORRECT format\n");
+					return -1;
+				}
+			}
+
 
             // Convert the amountBuffer to a integer value
             uint16_t amount = (uint16_t) asciiNumToDecimal(amountBuffer, 3);
@@ -101,8 +119,6 @@ int main() {
 				unitSize++;
 			}
 
-			// printf("Number of bytes in Type 1 unit = %d\n", unitSize);
-
 			// Reset the offset to the start of the unit
 			fseek(fp, unitStartIndex, SEEK_SET);
 
@@ -116,38 +132,13 @@ int main() {
 			// Print the values in the buffer
 			for (i = 0; i < unitSize; ++i) {
 				printf("%c", typeOneBuffer[i]);
+//				printf("%x", typeOneBuffer[i]);
 			}
 			printf("\n");
-/*
-            // Get the Numbers in the Type 1 Unit
-            uint8_t numberBuffer[amount][5];   // Buffer to store all the numbers
 
-            long offset = ftell(fp);
-            int i;
-            uint8_t currByte;
-            for (i = 0;i < amount; ++i) {
-                getTypeOneNum(numberBuffer[i], fp, offset);
-                currByte = fgetc(fp);
-                if (currByte == 0 || currByte == 1) {
-                    fseek(fp, -1, SEEK_CUR);
-                    break;
-                } else if (currByte == ',') {
-                    break;
-                }
-            }
-*/
-
-            // Print the Numbers
-
-else {
-	print()
-}
-
-        }
+		}
 
     } 
-
-
 
     return 0;
 }
