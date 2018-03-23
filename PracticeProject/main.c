@@ -42,7 +42,7 @@ uint8_t* getTypeOneNum(uint8_t* number, FILE* fp, long offset) {
 
 int main() {
     // Open the file
-    FILE* fp = fopen("practice_project_test_file_1", "rb");
+    FILE* fp = fopen("practice_project_test_file_2", "rb");
     //assert(fp);
 
     // Get the size of the File in bytes
@@ -55,12 +55,9 @@ int main() {
     printf("Current Offset: %lu\n", ftell(fp));
 
     while (ftell(fp) < fileSize - 1) {
-		printf("File size = %lu\n", fileSize);
-		printf("Current offset = %lu\n", ftell(fp));
 
         // Read the first byte of the file to determine the Type of the Unit
-        type = (uint8_t) fgetc(fp);
-		printf("Test\n");
+        fread(&type, sizeof(uint8_t), 1, fp);
         printf("Type: %d\t", type);
 
         if (type == 0) {
@@ -85,13 +82,12 @@ int main() {
                 printf("%d ", typeZeroBuffer[i]);
             }
 			printf("\n");
-			printf("Finished processing a type 0\n");
 
         } else if (type == 1) {
             // Get the amount in the unit
             uint8_t amountBuffer[3];
             fread(amountBuffer, sizeof(uint8_t), 3, fp);
-			
+				
 			// Check for valid read
 			int index;
 			for(index = 0; index < 3; ++index) {
@@ -104,7 +100,7 @@ int main() {
 
             // Convert the amountBuffer to a integer value
             uint16_t amount = (uint16_t) asciiNumToDecimal(amountBuffer, 3);
-			printf("Amount: %d\t", amount);
+			printf("Amount: %d\t", (int) amount);
 
 			// Get the Size of the unit in bytes
 			long unitStartIndex = ftell(fp);
@@ -117,6 +113,10 @@ int main() {
 					break;
 				}
 				unitSize++;
+				if(ftell(fp) == fileSize) {
+					 // printf("Read last byte\n");
+					break;
+				}
 			}
 
 			// Reset the offset to the start of the unit
