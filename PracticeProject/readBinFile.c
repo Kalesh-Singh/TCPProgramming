@@ -1,17 +1,10 @@
+#include <stdlib.h>
+#include <string.h>
 #include "helper.h"
 
 int main() {
     // Open the file to read
-    FILE* fp = fopen("practice_project_test_file_1", "rb");
-
-	// Hard coding the toFormat Option
-	int toFormat = 2;
-
-	// Open the file to write to 
-	FILE* ofp = fopen("output", "wb");
-
-	// Create a write buffer 
-	uint8_t writeBuffer[1000];		// File cannot be more than 1MB in either format
+    FILE* fp = fopen("output", "rb");
 
     // Get the size of the File in bytes
     long fileSize = getFileSize(fp);
@@ -29,7 +22,7 @@ int main() {
             uint8_t amount = getT0Amount(fp);
 	
 			// Convert the Type 0 Amount to a Type 1 Amount
-			char t1Amount[3]; 
+			char t1Amount[3];
 			t0AmountTot1Amount(amount, t1Amount);
 
 			// Print the amount
@@ -45,14 +38,6 @@ int main() {
 			// Print the Numbers to the Screen
 			printT0Numbers(buffer, amount);
 			printf("\n");
-
-			if ((toFormat == 0) || (toFormat == 2)) {
-				// Write the Type 0 Unit to the output file
-				writeType0(ofp, amount, buffer);;
-			} else if ((toFormat == 1) || (toFormat == 3)) {
-				// Write Type 1 Unit to the output file
-				writeType1FromType0 (ofp, amount, buffer);
-			}
 
         } else if (type == 1) {
             // Get the amount in the unit
@@ -75,7 +60,7 @@ int main() {
             uint16_t amount = (uint16_t) t1AmountTot0Amount(t1Amount);
 
 			// Get the size of the Type 1 Unit Numbers in bytes
-			int unitSize = sizeOfT1Numbers(fp, fileSize, amount);
+			int unitSize = sizeOfT1Numbers(fp, fileSize);
 			
 			// Check for errors in the format of the numbers
 			if (unitSize == -1) {
@@ -94,14 +79,6 @@ int main() {
 			printT1Numbers(buffer, unitSize);
 			printf("\n");
 
-			if ((toFormat == 0) || (toFormat == 1)) {
-				// Write Type 1 to the out file
-				writeType1(ofp, t1Amount, buffer, unitSize);
-			} else if ((toFormat == 2) || (toFormat == 3)) {
-				// Write Type 0 to the out file
-				writeType0FromType1(ofp, amount, buffer, unitSize);
-			}
-
 		} else {
 			fprintf(stderr, "INVALID UNIT TYPE: Expects 0 or 1.\n");
 			exit(EXIT_FAILURE);
@@ -109,9 +86,8 @@ int main() {
 
     } 
 
-	// Close the files
+	// Close the file
 	fclose(fp);
-	fclose(ofp);
 
     return 0;
 }

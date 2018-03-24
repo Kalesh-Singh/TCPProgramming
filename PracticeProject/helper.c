@@ -46,13 +46,9 @@ void t0AmountTot1Amount(uint8_t t0Amount, char* t1Amount) {
 
 uint16_t t1AmountTot0Amount(char* t1Amount) {
 	/* Returns the Type 0 equivalent of a t1Amount */
-    uint16_t t0Amount = 0;
-    int i;
-    int placeValue = 1;
-    for (i = 2; i >= 0; --i) {
-        t0Amount += (t1Amount[i] - 48) * placeValue;
-        placeValue *= 10;
-    }
+	uint16_t t0Amount = -1;
+	t0Amount = atoi(t1Amount);
+
     return t0Amount;
 }
 
@@ -180,16 +176,9 @@ void writeType0FromType1(FILE* out, uint8_t amount, uint8_t* buffer, int unitSiz
 	uint16_t t0Nums[amount];
 
 	for (int i = 0; i < amount; ++i) {
-		uint16_t t0Num = 0;
-		int placeValue = 1;
-		for (int j = 4; j >= 0; --j) {
-			t0Num += (t1Nums[i][j] - 48) * placeValue;
-			placeValue *= 10;
-		}
-		// Change the endianess to from Little to Big for writing to the file
+		uint16_t t0Num = atoi(t1Nums[i]);
 		t0Nums[i] = (t0Num << 8) | (t0Num >> 8);
 	}
-
 
 	// Determine the size of data to be written
 	long size = 1 + 1 + (amount * 2);

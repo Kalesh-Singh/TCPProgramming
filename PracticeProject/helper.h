@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 long getFileSize(FILE* fp);											/* Return the file size; does not change the current position in the file. */
 uint8_t getType(FILE* fp);											/* Returns the Type of the Unit */
