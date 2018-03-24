@@ -74,15 +74,17 @@ void printT0Numbers(uint16_t* buffer, uint8_t amount) {
 	}
 }
 
-int sizeOfT1Numbers(FILE* fp, long fileSize) {
+int sizeOfT1Numbers(FILE* fp, long fileSize, uint16_t amount) {
 	/* Returns the size in bytes of the Numbers of a Type 1 Unit */
 	long currPos = ftell(fp);
 	int size = 0;
 	uint8_t currByte;
 	int prevCommaPos = -1;
+	int numOfCommas = 0;
 	while (1) {
 		currByte = fgetc(fp);
-		if(currByte == 0 || currByte == 1) {
+		if((currByte == 0 || currByte == 1) && (numOfCommas == amount - 1)) {
+			// printf("Number of commas = %d\n", numOfCommas);
 			fseek(fp, -1, SEEK_CUR);
 			break;
 		}
@@ -93,6 +95,7 @@ int sizeOfT1Numbers(FILE* fp, long fileSize) {
 			if ((ftell(fp) - prevCommaPos) < 2) {
 				return -2;	// Comma followed by another comma
 			}
+			numOfCommas += 1;
 		}
 
 		size++;
@@ -199,6 +202,73 @@ void writeType0FromType1(FILE* out, uint8_t amount, uint8_t* buffer, int unitSiz
 	memcpy(writeBuffer + 1, &amount, 1);
 	memcpy(writeBuffer + 2, t0Nums, amount * 2);
 
+
+	// Write the contents of the write buffer to the file
+	fwrite(writeBuffer, sizeof(uint8_t), size, out);
+}
+
+ void writeType1FromType0 (FILE* out, uint8_t amount, uint16_t* buffer) {
+	/* Writes a Type 1 Unit to the out file, given Type 0 data */
+
+	// Create a write buffer
+	char writeBuffer[6000]; 	/* will never be more than 6000; since 
+	amount must be <= 999, Numbers must have <= 5 digits (i.e < 65535)  
+	and at most 998 commas */
+
+	// Zero the write buffer
+	memset(writeBuffer, 0, 6000);
+
+	// Initialize the size of data to be written
+	int size = 0;
+	
+	// Add the type to the write buffer
+	uint8_t type = 1;
+	memcpy(writeBuffer + size, &type, 1);
+	size += 1;
+
+	// Convert the Type 0 Amount to a Type 1 Amount
+	char t1Amount[3];
+	t0AmountTot1Amount(amount, t1Amount);
+
+	// Add the amount to the write buffer
+	memcpy(writeBuffer + size, t1Amount, 3);
+	size += 3;
+
+	// Convert the Type 0 Numbers to Type 1 Numbers and add them to the buffer
+	char comma = ',';
+	int i;
+	for (i = 0; i < amount; ++i) {
+		// Convert from Big to Little Endian
+		uint16_t number = (buffer[i] << 8) | (buffer[i] >> 8);
+		char tempNum[6];
+		int length = snprintf(tempNum, 6, "%d", number);
+		memcpy(writeBuffer + size, tempNum, length);
+		size += length;
+		if (i != amount - 1) {
+			memcpy(writeBuffer + size, &comma, 1);
+			size += 1;
+		}
+	}
+	// Write the contents of the write buffer to the file
+	fwrite(writeBuffer, sizeof(uint8_t), size, out);
+}
+
+void writeType1(FILE* out, char* t1Amount, uint8_t* buffer, int unitSize) {
+	/* Writes a Type 1 Unit to the out file, given Type 1 data */
+
+	// Set the type to 0
+	uint8_t type = 1;
+
+	// Determine the size of data to be written
+	long size = 1 + 3 + unitSize;
+
+	// Create a write buffer 
+	uint8_t writeBuffer[size];
+
+	// Populate the write buffer
+	memcpy(writeBuffer, &type, 1);
+	memcpy(writeBuffer + 1, t1Amount, 3);
+	memcpy(writeBuffer + 4, buffer, unitSize);
 
 	// Write the contents of the write buffer to the file
 	fwrite(writeBuffer, sizeof(uint8_t), size, out);

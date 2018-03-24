@@ -11,8 +11,10 @@ void t0AmountTot1Amount(uint8_t t0Amount, char* t1Amount);			/* Converts t0Amoun
 uint16_t t1AmountTot0Amount(char* t1Amount);						/* Returns the Type 0 equivalent of a t1Amount */
 void populateT0Buffer(FILE* fp, uint16_t* buffer, uint8_t amount);	/* Reads the Numbers of a Type 0 Unit into buffer */
 void printT0Numbers(uint16_t* buffer, uint8_t amount);				/* Prints the Type 0 Numbers of a Unit to the screen */
-int sizeOfT1Numbers(FILE* fp, long fileSize);						/* Returns the size in bytes of the Numbers of a Type 1 Unit */
+int sizeOfT1Numbers(FILE* fp, long fileSize, uint16_t amount);		/* Returns the size in bytes of the Numbers of a Type 1 Unit */
 void populateT1Buffer(FILE* fp, uint8_t* buffer, uint8_t amount);	/* Reads the Numbers of a Type 1 Unit into buffer */
 void printT1Numbers(uint8_t* buffer, int unitSize);					/* Prints the Type 1 Numbers of a Unit to the screen */
 void writeType0(FILE* out, uint8_t amount, uint16_t* buffer);		/* Writes a Type 0 Unit to the out file, given Type 0 data */
 void writeType0FromType1(FILE* out, uint8_t amount, uint8_t* buffer, int unitSize);	/* Writes a Type 0 Unit to the out file, given Type 1 data */
+void writeType1FromType0 (FILE* out, uint8_t amount, uint16_t* buffer);	/* Writes a Type 1 Unit to the out file, given Type 0 data */
+void writeType1(FILE* out, char* t1Amount, uint8_t* buffer, int unitSize);	/* Writes a Type 1 Unit to the out file, given Type 1 data */
