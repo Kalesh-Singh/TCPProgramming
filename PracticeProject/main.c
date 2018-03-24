@@ -1,141 +1,81 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-#include <assert.h>
-
-int asciiNumToDecimal(uint8_t amountBuffer[], uint32_t size) {
-    int decimalValue = 0;
-    int i;
-    int placeValue = 1;
-    for (i = size - 1; i >= 0; --i) {
-        decimalValue += (amountBuffer[i] - 48) * placeValue;
-        placeValue *= 10;
-    }
-    return decimalValue;
-}
-
-uint8_t* getTypeOneNum(uint8_t* number, FILE* fp, long offset) {
-    uint8_t counter = 0;
-    uint8_t currByte;
-    while (1) {
-        currByte = (uint8_t) fgetc(fp);
-        if (currByte == ',' || currByte == 0 || currByte == 1) {
-            fseek(fp, -(counter + 1), SEEK_CUR);
-            break;
-        }
-        counter++;
-    }
-
-    int i;
-
-    for (i = 0; i < 5; ++i) {
-        if (i < (5 - counter))
-            number[i] = 0;
-        else
-            number[i] = (uint8_t) getc(fp);
-    }
-
-    return number;
-}
- 
+#include "helper.h"
 
 int main() {
     // Open the file
-    FILE* fp = fopen("practice_project_test_file_2", "rb");
-    //assert(fp);
+    FILE* fp = fopen("practice_project_test_file_1", "rb");
 
     // Get the size of the File in bytes
-    fseek(fp, 0L, SEEK_END);
-    long fileSize = ftell(fp);
-    printf("File Size: %lu\n", fileSize);
-	uint8_t type;
+    long fileSize = getFileSize(fp);
+	
     // Go back to the beginning of the file
     rewind(fp);
-    printf("Current Offset: %lu\n", ftell(fp));
 
     while (ftell(fp) < fileSize - 1) {
-
-        // Read the first byte of the file to determine the Type of the Unit
-        fread(&type, sizeof(uint8_t), 1, fp);
-        printf("Type: %d\t", type);
+        // Get the Type of the Unit
+		uint8_t type = getType(fp);
+        printf("Type: %d\t\t", type);
 
         if (type == 0) {
             // Get the amount in the unit
-            uint8_t amount = (uint8_t) fgetc(fp);
-            printf("Amount: %d\t", amount);
+            uint8_t amount = getT0Amount(fp);
+	
+			// Convert the Type 0 Amount to a Type 1 Amount
+			char t1Amount[3];
+			t0AmountTot1Amount(amount, t1Amount);
+
+			// Print the amount
+            printf("Amount: %s\t", t1Amount);
 
             // Get the Numbers in the Type 0 Unit
-            uint16_t typeZeroBuffer[amount];
-            fread(typeZeroBuffer, sizeof(uint16_t), amount, fp);
-			
-			// Convert from Big to Little Endian
-			int i;
-			for (int i = 0; i < amount; ++i) {
-				uint16_t lsb = typeZeroBuffer[i] << 8;
-				uint16_t msb = typeZeroBuffer[i] >> 8;
-				typeZeroBuffer[i] = lsb | msb;
-			}
+            uint16_t buffer[amount];
+			populateT0Buffer(fp, buffer, amount);
 
-            // Print the Numbers to the Screen
-            for (i = 0; i < amount; ++i) {
-                printf("%d ", typeZeroBuffer[i]);
-            }
+			// Print the Numbers to the Screen
+			printT0Numbers(buffer, amount);
 			printf("\n");
 
         } else if (type == 1) {
             // Get the amount in the unit
-            uint8_t amountBuffer[3];
-            fread(amountBuffer, sizeof(uint8_t), 3, fp);
-				
-			// Check for valid read
-			int index;
-			for(index = 0; index < 3; ++index) {
-				if (amountBuffer[index] < 48 && amountBuffer[index] > 57) {
-					printf("Error: File is has INCORRECT format\n");
-					return -1;
-				}
+            char t1Amount[3];
+            getT1Amount(fp, t1Amount);
+
+			// Check for valid amount
+			if (validateT1Amount(t1Amount) < 0) {
+				fprintf(stderr, "INVALID AMOUNT (TYPE 1): Expects numeric ASCII characters.\n");
+				exit(EXIT_FAILURE);
 			}
 
+			// Print the amount to the screen
+			printf("Amount: %s\t", t1Amount);
 
-            // Convert the amountBuffer to a integer value
-            uint16_t amount = (uint16_t) asciiNumToDecimal(amountBuffer, 3);
-			printf("Amount: %d\t", (int) amount);
+            // Convert the t1Amount to an integer value
+            uint16_t amount = (uint16_t) t1AmountTot0Amount(t1Amount);
 
-			// Get the Size of the unit in bytes
-			long unitStartIndex = ftell(fp);
-			int unitSize = 0;
-			uint8_t currByte;
-			while (1) {
-				currByte = fgetc(fp);
-				if(currByte == 0 || currByte == 1) {
-					fseek(fp, -1, SEEK_CUR);
-					break;
-				}
-				unitSize++;
-				if(ftell(fp) == fileSize) {
-					 // printf("Read last byte\n");
-					break;
-				}
+			// Get the size of the Type 1 Unit Numbers in bytes
+			int unitSize = sizeOfT1Numbers(fp, fileSize);
+			
+			// Check for errors in the format of the numbers
+			if (unitSize == -1) {
+				fprintf(stderr, "TYPE 1 FORMAT ERROR: Each byte is expected to be either a numeric ASCII digit or ASCII comma.\n");
+				exit(EXIT_FAILURE);
+			} else if (unitSize == -2) {
+				fprintf(stderr, "TYPE 1 FORMAT ERROR: Commas must be separated by at least 1 numberic ASCII digit.\n");
+				exit(EXIT_FAILURE);
 			}
 
-			// Reset the offset to the start of the unit
-			fseek(fp, unitStartIndex, SEEK_SET);
+			// Get the Numbers in Type 1 Unit
+			uint8_t buffer[unitSize];
+			populateT1Buffer(fp, buffer, unitSize);
 
-			// Populate the buffer
-			uint8_t typeOneBuffer[unitSize];
-			int i;
-			for (i = 0; i < unitSize; ++i) {
-				typeOneBuffer[i] = fgetc(fp);
-			}
-
-			// Print the values in the buffer
-			for (i = 0; i < unitSize; ++i) {
-				printf("%c", typeOneBuffer[i]);
-//				printf("%x", typeOneBuffer[i]);
-			}
+			// Print the Numbers to the screen
+			printT1Numbers(buffer, unitSize);
 			printf("\n");
 
+		} else {
+			fprintf(stderr, "INVALID UNIT TYPE: Expects 0 or 1.\n");
+			exit(EXIT_FAILURE);
 		}
 
     } 
