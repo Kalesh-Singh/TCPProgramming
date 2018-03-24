@@ -2,8 +2,14 @@
 #include "helper.h"
 
 int main() {
-    // Open the file
-    FILE* fp = fopen("practice_project_test_file_1", "rb");
+    // Open the file to read
+    FILE* fp = fopen("practice_project_test_file_2", "rb");
+
+	// Open the file to write to 
+	FILE* ofp = fopen("output", "wb");
+
+	// Create a write buffer 
+	uint8_t writeBuffer[1000];		// File cannot be more than 1MB in either format
 
     // Get the size of the File in bytes
     long fileSize = getFileSize(fp);
@@ -25,7 +31,10 @@ int main() {
 			t0AmountTot1Amount(amount, t1Amount);
 
 			// Print the amount
-            printf("Amount: %s\t", t1Amount);
+			char printBuffer[4];
+			memcpy(printBuffer, t1Amount, 3);
+			printBuffer[3] = '\0';
+            printf("Amount: %s\t", printBuffer);
 
             // Get the Numbers in the Type 0 Unit
             uint16_t buffer[amount];
@@ -34,6 +43,9 @@ int main() {
 			// Print the Numbers to the Screen
 			printT0Numbers(buffer, amount);
 			printf("\n");
+
+			// Write the Type Zero Unit to the out put file
+			writeType0(ofp, amount, buffer);
 
         } else if (type == 1) {
             // Get the amount in the unit
@@ -47,7 +59,10 @@ int main() {
 			}
 
 			// Print the amount to the screen
-			printf("Amount: %s\t", t1Amount);
+			char printBuffer[4];
+			memcpy(printBuffer, t1Amount, 3);
+			printBuffer[3] = '\0';
+			printf("Amount: %s\t", printBuffer);
 
             // Convert the t1Amount to an integer value
             uint16_t amount = (uint16_t) t1AmountTot0Amount(t1Amount);
@@ -72,12 +87,19 @@ int main() {
 			printT1Numbers(buffer, unitSize);
 			printf("\n");
 
+			// Write Type 0 to the out file
+			writeType0FromType1(ofp, amount, buffer, unitSize);
+
 		} else {
 			fprintf(stderr, "INVALID UNIT TYPE: Expects 0 or 1.\n");
 			exit(EXIT_FAILURE);
 		}
 
     } 
+
+	// Close the files
+	fclose(fp);
+	fclose(ofp);
 
     return 0;
 }
