@@ -1,6 +1,39 @@
 #include <stdlib.h>
 #include "helper.h"
 
+// NOTE; Use snprintf to convert the binary (decimal) Type 0 numbers to Type 1 Numbers
+// The return value is the number of characters that ould have been printed including the '\0'
+// Remove the '\0' using memcpy
+
+// HInt: Get the size of the buffer first by running snprintf and adding the return values in a loop.
+
+ void convertT0NumsTot1Nums(uint16_t* buffer, uint8_t amount) {
+	// TODO: FIX function name and parameters 
+	// TODO; MOve wirtebuffer to up here
+	// TODO: Move size to above here
+	// TODO: Add type to the buffer and increment size
+	// TODO: Convert amount to Type1 --> Note: FUnction already written use it
+	// TODO: Add amount to the buffer and increment size
+
+
+	char writeBuffer[6000]; 	// will never be more than 6000; since amount must be <= 999, Numbers must have <= 5 digits (i.e < 65535)  and at most 998 commas
+
+	// Set write buffer to all 0s
+	memset(writeBuffer, 0, 6000);
+
+	char comma = ',';
+	int size = 0;
+	int i;
+	for (i = 0; i < amount; ++i) {
+		char tempNum[5];
+		int length = snprintf(tempNum, 5, "%d", buffer[i]);
+		memcpy(writeBuffer + size, tempNum, length - 1);
+		size += length - 1;
+		memcpy(writeBuffer + size, &comma, 1);
+		size += 1;
+	}
+}
+
 int main() {
     // Open the file to read
     FILE* fp = fopen("practice_project_test_file_2", "rb");
