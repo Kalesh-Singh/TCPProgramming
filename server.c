@@ -1,14 +1,10 @@
 // Server
-
-#include <stdio.h>				/* for printf() nad fprintf() */
-#include <stdlib.h>				/* for atoi() */
-
 #include <sys/socket.h>			/* for socket(), bind(), connect(), send(), and revc() */
 #include <arpa/inet.h>			/* for sockaddr_in and inet_ntoa() */
-#include <string.h>				/* for memset */
 #include <unistd.h>				/* for close */
+#include "helper.h"				/* for server helper functions */
 
-#define LISTENQ (5)		/* Backlog for listen() */
+#define LISTENQ (5)				/* Backlog for listen() */
 
 void DieWithError(char *errorMessage) {
 	perror (errorMessage) ;
@@ -81,33 +77,73 @@ int main(int argc, char* argv[]) {
 			toName[toNameSize] = '\0';
 			printf("%s\n", toName);	
 			printf("Data to be written: %s\n", fileBuffer + toNameSize + 2);
+		
+			// ---------------------------------------------------------------------------------
+			// Create IN file to be passed to practice project then delete it 
+			FILE* tempIn = fopen(".tempFile", "wb");
+			if (tempIn == NULL) {
+				perror("Failed to open file");
+				return -1;
+			}
+		
+			// Write the data to the file
+			fwrite(fileBuffer + toNameSize + 2, 1, receivedBytes - (toNameSize + 2), tempIn);
+			printf("Created temp file for processing...\n");
 
-			// TODO: Process received data using practice project to get file status
+			// Close the file
+			fclose(tempIn);
+			//----------------------------------------------------------------------------------
+			tempIn = fopen(".tempFile", "rb");
+			if (tempIn == NULL) {
+				perror("Failed to open IN file");
+				return -1;
+			}
+			
+			FILE* out = fopen(toName, "wb+");		// We also need to read to display the written data
+			if (out == NULL) {
+				perror("Failed to open OUT file");
+				return -1;
+			}
 
-			int fileStatus = 0;
-			char response = (char) fileStatus;
+			// TODO: Pass tempIn, out and toFormat to Practice Project
+			// Get File status
+			int writeStatus = writeUnits(tempIn, out, toFormat);
+
+			// Close the IN file
+			fclose(tempIn);
+			
+			// Close the OUT file
+			fclose(out);
+			
+
+			int removeStatus = remove(".tempFile");
+			printf("Remove status = %d\n", removeStatus);
+			
+			if (removeStatus == 0)
+				printf("Successfully deleted temp file\n");
+			else
+				printf("Failed to delete file\n");
+			//--------------------------------------------------------------------------------
+
+			if (writeStatus < 0) {
+				removeStatus = remove(toName);
+				printf("Remove status = %d\n", removeStatus);
+			
+				if (removeStatus == 0)
+					printf("Successfully deleted file that was partially created\n");
+				else
+					printf("Failed to delete created file\n");
+			} else {
+				printf("File written on server...\n");	
+			}	
+
+			// Create the server response
+			char response = (char) writeStatus;
 
 			// Send the response to the client
 			if (send(clientSocket, &response, 1, 0) != 1)
 				DieWithError("send() failed");
 			printf("Sent response to client ... \n");
-			
-		
-			if (fileStatus != -1) {
-				// Open output file
-				FILE* out = fopen(toName, "wb");
-				if (out == NULL) {
-					perror("Failed to open file: ");
-					return -1;
-				}
-			
-				// Write the data to the file
-				fwrite(fileBuffer + toNameSize + 2, 1, receivedBytes - (toNameSize + 2), out);
-				printf("File written on server...\n");
-
-				// Close the file
-				fclose(out);
-			}
 		}
 		
 		// Close the client socket

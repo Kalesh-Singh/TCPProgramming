@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 	// Try to open the file at file path 
 	FILE* in = fopen(filePath, "rb");
 	if (in == NULL) {
-		perror("Failed to open file: ");
+		perror("Failed to open file");
 		return -1;
 	}
 
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 	// Print the response from the server
 	if (serverResponse == 0)
 		printf("Success\n");
-	else if (serverResponse == -1)
+	else if (serverResponse < 0)
 		printf("Format error\n");
 
 	// Close the Socket

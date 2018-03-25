@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
+#include <stdio.h>				/* for printf() nad fprintf() */
+#include <stdlib.h>				/* for atoi() */
+#include <string.h>				/* for memset */
+#include <stdint.h>				/* for uint*_t types */
 
 long getFileSize(FILE* fp);											/* Return the file size; does not change the current position in the file. */
 uint8_t getType(FILE* fp);											/* Returns the Type of the Unit */
