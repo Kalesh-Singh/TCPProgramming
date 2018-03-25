@@ -53,8 +53,8 @@ int main(int argc, char* argv[]) {
 			DieWithError("accept() failed");
 		printf("Client socket is now connected to a client ... \n");
 
-		char fileBuffer[1000];						/* Buffer to read incoming file */
-		int receivedBytes;							/* Size of received message */
+		char fileBuffer[1000 + 2 + 256];			/* Buffer to read incoming file */
+		int receivedBytes = 0;						/* Size of received message */
 
 		// Receive message from the client
 		if ((receivedBytes = recv(clientSocket, fileBuffer, 1000, 0)) < 0)
@@ -64,23 +64,52 @@ int main(int argc, char* argv[]) {
 		// Print the received data
 		printf("\nReceived data\n\n");
 		printf("%s", fileBuffer);
+		printf("\n");
+		
+		if (receivedBytes > 0) {
+			char* buffer = NULL;
+			size_t bufferSize;
 
-		// Open output file
-		FILE* out = fopen("output", "wb");
-		if (out == NULL) {
-			perror("Failed to open file: ");
-			return -1;
+			char toFormat;
+			memcpy(&toFormat, fileBuffer, 1);
+			printf("toFormat: %d\n", toFormat);
+			char toNameSize;
+			memcpy(&toNameSize, fileBuffer + 1, 1);
+			printf("toNameSize: %d\n", toNameSize);
+			char toName[toNameSize + 1];
+			memcpy(toName, fileBuffer + 2, toNameSize);
+			toName[toNameSize] = '\0';
+			printf("%s\n", toName);	
+			printf("Data to be written: %s\n", fileBuffer + toNameSize + 2);
+
+			// TODO: Process received data using practice project to get file status
+
+			int fileStatus = 0;
+			char response = (char) fileStatus;
+
+			// Send the response to the client
+			if (send(clientSocket, &response, 1, 0) != 1)
+				DieWithError("send() failed");
+			printf("Sent response to client ... \n");
+			
+		
+			if (fileStatus != -1) {
+				// Open output file
+				FILE* out = fopen(toName, "wb");
+				if (out == NULL) {
+					perror("Failed to open file: ");
+					return -1;
+				}
+			
+				// Write the data to the file
+				fwrite(fileBuffer + toNameSize + 2, 1, receivedBytes - (toNameSize + 2), out);
+				printf("File written on server...\n");
+
+				// Close the file
+				fclose(out);
+			}
 		}
-
-		// TODO: Process received data using practice project
-
-		// Write the data to the file
-		fwrite(fileBuffer, 1, receivedBytes, out);
-		printf("File written on server...\n");
-
-		// Close the file
-		fclose(out);
-
+		
 		// Close the client socket
 		close(clientSocket);
 	}	

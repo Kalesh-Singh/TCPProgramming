@@ -14,7 +14,7 @@ USAGE:
 
 ...$ ./echoserv 3357 &
 ...$ ./echoclnt -a 127.0.0.1 -p 3357
-Enter the string to echo: Echo me, please.
+Enter the string to echo: #include Echo me, please.
 Echo response: Echo me, please.
 
 ...$
@@ -86,13 +86,33 @@ int main(int argc, char *argv[]) {
 
 	/* Get string to echo from user */
 	
-	printf("Enter the string to echo: ");
-	fgets(buffer, MAX_LINE, stdin);
+	// printf("Enter the string to echo: ");
+	// fgets(buffer, MAX_LINE, stdin);
 
+	//TODO: /* Get the file to send */
+/*
+	char fileName[1000];
+	printf("Enter the path to the file to send: ");
+	fgets(fileName, MAX_LINE, stdin);
+	printf("Filename = %s\n", fileName);
+*/
+
+	FILE* in = fopen("test_file_1", "rb");
+	if (in == NULL) {
+		perror("Failed to open file: ");
+		return -1;
+	}
+
+	// Get the sile size
+	fseek(in, 0, SEEK_END);
+	long fileSize = ftell(in);
+	rewind(in);
+	
 
 	/* Send string to echo server, and retrieve response */
 
-	Writeline(conn_s, buffer, strlen(buffer));
+	Writeline(conn_s, buffer, fileSize);
+	printf("Sent the file data\n");
 	Readline(conn_s, buffer, MAX_LINE-1);
 
 

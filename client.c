@@ -22,8 +22,9 @@ int main(int argc, char* argv[]) {
 	char* serverIP;			/* Server IP (dotted quad) */
 	unsigned short serverPort;	/* Server Port */
 	char* filePath;	
-	char* toFormat;
+	char toFormat;
 	char* toName;
+	char toNameSize;
 
 	// Parsing the command line arguments
 	serverIP = argv[1];
@@ -32,10 +33,12 @@ int main(int argc, char* argv[]) {
 	printf("Server Port: %d\n", serverPort);
 	filePath = argv[3];
 	printf("File Path: %s\n", filePath);
-	toFormat = argv[4];
-	printf("To Format: %s\n", toFormat);
+	toFormat = atoi(argv[4]);
+	printf("To Format: %d\n", toFormat);
 	toName = argv[5];
-	printf("To Name : %s\n", toName); 
+	printf("To Name : %s\n", toName);
+	toNameSize = strlen(toName);
+	printf("Size of toName: %d\n", toNameSize);
 	
 
 	// Try to open the file at file path 
@@ -50,14 +53,27 @@ int main(int argc, char* argv[]) {
 	long fileSize = ftell(in);
 	printf("File Size: %lu\n", fileSize);
 	rewind(in);
+	
+	// Caculate the total bytes to send
+	int bytesToSend = 1 + 1 + toNameSize + fileSize;
 
 	// Create a write buffer
-	char fileBuffer[fileSize];
+	char fileBuffer[bytesToSend];
 
 	// Populate the buffer with the data from the file
-	fread(fileBuffer, 1, fileSize, in);
+	memcpy(fileBuffer, &toFormat, 1);			// Place toFormat in the fileBuffer
+	memcpy(fileBuffer + 1, &toNameSize, 1);		// Place toNameSize in the fileBuffer
+	memcpy(fileBuffer + 2, toName, toNameSize);	// Place toName in the fileBuffer
+	fread(fileBuffer + 2 + toNameSize, 1, fileSize, in);	// Place file contents in file buffer
+
+	printf("------------------------------------------------------\n");
 	printf("\nFile Data\n\n");
-	printf("%s", fileBuffer);
+	int i;
+	for (i = 0; i < bytesToSend; ++i) {
+		printf("%c", fileBuffer[i]);
+	}
+	printf("\n");
+	printf("------------------------------------------------------\n");
 	
 	// Close the file
 	fclose(in);
@@ -83,10 +99,26 @@ int main(int argc, char* argv[]) {
 	printf("Connection with server established ... \n");
 		
 	// Send file to server
-	if (send(sock, fileBuffer, fileSize, 0) != fileSize)
+	if (send(sock, fileBuffer, bytesToSend, 0) != bytesToSend)
 		DieWithError("send() sent a different number of bytes than expected");
 	printf("Sent file to server ...\n");
 
+	// Wait for response from server
+	char serverResponse;
+	int bytesReceived = 0;
+	while (bytesReceived == 0) {
+		if((bytesReceived = recv(sock, &serverResponse, 1, 0))<= 0)
+			DieWithError("recv() failed or connection closed permanently");
+		printf("Received Response from server ... \n");
+	}
+
+	// Print the response from the server
+	if (serverResponse == 0)
+		printf("Success\n");
+	else if (serverResponse == -1)
+		printf("Format error\n");
+
+	// Close the Socket
 	close(sock);
 
 	return 0;

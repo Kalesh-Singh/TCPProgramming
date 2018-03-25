@@ -132,7 +132,6 @@ void writeType0(FILE* out, uint8_t amount, uint16_t* buffer) {
 	memcpy(writeBuffer + 1, &amount, 1);
 	memcpy(writeBuffer + 2, buffer, amount * 2);
 
-
 	// Write the contents of the write buffer to the file
 	fwrite(writeBuffer, sizeof(uint8_t), size, out);
 
