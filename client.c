@@ -24,23 +24,54 @@ int main(int argc, char* argv[]) {
 	char* filePath;	
 	char toFormat;
 	char* toName;
-	char toNameSize;
+	unsigned char toNameSize;
+
+	if (argc != 6) 	{
+		printf("\nIncorrect Number of Arguments\n\n");
+		printf("Usage:");
+		printf("\t%s [server IP] [server port number] [file path] [to_format] [to_name] \n\n", argv[0]);
+		exit(EXIT_SUCCESS);
+	}
 
 	// Parsing the command line arguments
 	serverIP = argv[1];
-	printf("Server IP: %s\n", serverIP); 
-	serverPort = atoi(argv[2]);
+	printf("Server IP: %s\n", serverIP);
+
+	int temp = atoi(argv[2]);
+	if (temp < 0 || temp > 65535) {
+		printf("\nInvalid Port Number: ");
+		printf("Port number range is 0 to 65535\n\n");
+		exit(EXIT_SUCCESS);
+	}
+	serverPort = temp;
 	printf("Server Port: %d\n", serverPort);
+
 	filePath = argv[3];
 	printf("File Path: %s\n", filePath);
+
 	toFormat = atoi(argv[4]);
+	if (toFormat < 0 || toFormat > 3) {
+		printf("\nInvalid value for to_format\n\n");
+		printf("to_format Options:\n");
+		printf("\t0 - Write units to [to_name] without performing any conversion\n");
+		printf("\t1 - Convert Type 0 Units to Type 1 (leaving Type 1 units unchanged), before writing units to [to_name]\n");
+		printf("\t2 - Convert Type 1 Units to Type 0 (leaving Type 0 units unchanged), before writing units to [to_name]\n");
+		printf("\t3 - Convert Type 0 Units to Type 1 and Type 1 Units to Type 0, before writing units to [to_name]\n\n");
+		exit(EXIT_SUCCESS);
+	}
 	printf("To Format: %d\n", toFormat);
+
 	toName = argv[5];
 	printf("To Name : %s\n", toName);
-	toNameSize = strlen(toName);
+	temp = strlen(toName);
+	printf("Temp size = %d\n", temp);
+	if (temp > 256) {
+		printf("\nFILE NAME TOO LONG: to_name cannot be greater than 256 characters\n\n");
+		exit(EXIT_SUCCESS); 
+	}
+	toNameSize = temp;
 	printf("Size of toName: %d\n", toNameSize);
 	
-
 	// Try to open the file at file path 
 	FILE* in = fopen(filePath, "rb");
 	if (in == NULL) {
@@ -52,9 +83,11 @@ int main(int argc, char* argv[]) {
 	fseek(in, 0L, SEEK_END);
 	long fileSize = ftell(in);
 	printf("File Size: %lu\n", fileSize);
+	if (fileSize > 1000)
+		printf("\n\nWARNING: FILE SIZE EXCEEDS 1 kB : Undefined Behavior\n\n");
 	rewind(in);
 	
-	// Caculate the total bytes to send
+	// Calculate the total bytes to send
 	int bytesToSend = 1 + 1 + toNameSize + fileSize;
 
 	// Create a write buffer

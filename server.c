@@ -13,7 +13,21 @@ void DieWithError(char *errorMessage) {
 
 int main(int argc, char* argv[]) {
 	// Parse the command line arguments
-	unsigned short serverPort = atoi(argv[1]);
+	if (argc < 2 || argc > 2) 	{
+		printf("\nIncorrect Number of Arguments\n\n");
+		printf("Usage:");
+		printf("\t%s [port number]\n\n", argv[0]);
+		exit(EXIT_SUCCESS);
+	}
+
+	int temp = atoi(argv[1]);
+
+	if (temp < 0 || temp > 65535) {
+		printf("\nInvalid Port Number: ");
+		printf("Port number range is 0 to 65535\n\n");
+		exit(EXIT_SUCCESS);
+	}
+	unsigned short serverPort = temp;
 
 	int serverSocket;					/* Socket descriptor for server */
 	int clientSocket;					/* Socket descriptor for client */
@@ -69,7 +83,7 @@ int main(int argc, char* argv[]) {
 			char toFormat;
 			memcpy(&toFormat, fileBuffer, 1);
 			printf("toFormat: %d\n", toFormat);
-			char toNameSize;
+			unsigned char toNameSize;
 			memcpy(&toNameSize, fileBuffer + 1, 1);
 			printf("toNameSize: %d\n", toNameSize);
 			char toName[toNameSize + 1];
@@ -99,7 +113,7 @@ int main(int argc, char* argv[]) {
 				return -1;
 			}
 			
-			FILE* out = fopen(toName, "wb+");		// We also need to read to display the written data
+			FILE* out = fopen(toName, "wb+");		// "wb+" because we also need to read to display the written data
 			if (out == NULL) {
 				perror("Failed to open OUT file");
 				return -1;
@@ -115,7 +129,7 @@ int main(int argc, char* argv[]) {
 			// Close the OUT file
 			fclose(out);
 			
-
+			// Delete the .temp file
 			int removeStatus = remove(".tempFile");
 			printf("Remove status = %d\n", removeStatus);
 			
@@ -126,6 +140,7 @@ int main(int argc, char* argv[]) {
 			//--------------------------------------------------------------------------------
 
 			if (writeStatus < 0) {
+				// Delete the partially written file
 				removeStatus = remove(toName);
 				printf("Remove status = %d\n", removeStatus);
 			
