@@ -81,14 +81,12 @@ int main(int argc, char* argv[]) {
 
 	// Get the size of the file in bytes
 	fseek(in, 0L, SEEK_END);
-	long fileSize = ftell(in);
+	unsigned long fileSize = ftell(in);
 	printf("File Size: %lu\n", fileSize);
-	if (fileSize > 1000)
-		printf("\n\nWARNING: FILE SIZE EXCEEDS 1 kB : Undefined Behavior\n\n");
 	rewind(in);
 	
 	// Calculate the total bytes to send
-	int bytesToSend = 1 + 1 + toNameSize + fileSize;
+	unsigned long bytesToSend = 1 + 1 + toNameSize + fileSize;
 
 	// Create a write buffer
 	char fileBuffer[bytesToSend];
@@ -130,7 +128,26 @@ int main(int argc, char* argv[]) {
 		DieWithError("connect() failed");
 	}
 	printf("Connection with server established ... \n");
-		
+
+	// Send bytesToSend to server 
+	if (send(sock, &bytesToSend, sizeof(long), 0) != sizeof(long))
+		DieWithError("send() sent a different number of bytes than expected");
+	printf("Sent file size to server ...\n");
+
+	// Wait for confirmation that sever has received bytes to expect
+	int bytesReceived = 0;
+	unsigned long bytesExpected;
+	while (bytesReceived == 0) {
+		if((bytesReceived = recv(sock, &bytesExpected, 1, 0))<= 0)
+			DieWithError("recv() failed or connection closed permanently");
+		printf("Received Response from server ... \n");
+	}
+	
+	if (bytesExpected == bytesToSend)
+		printf("Server correctly received size of incoming data\n");
+	else 
+		printf("Server did not receive correct data size to expect\n");
+
 	// Send file to server
 	if (send(sock, fileBuffer, bytesToSend, 0) != bytesToSend)
 		DieWithError("send() sent a different number of bytes than expected");
@@ -138,7 +155,7 @@ int main(int argc, char* argv[]) {
 
 	// Wait for response from server
 	char serverResponse;
-	int bytesReceived = 0;
+	bytesReceived = 0;
 	while (bytesReceived == 0) {
 		if((bytesReceived = recv(sock, &serverResponse, 1, 0))<= 0)
 			DieWithError("recv() failed or connection closed permanently");

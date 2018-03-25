@@ -63,11 +63,24 @@ int main(int argc, char* argv[]) {
 			DieWithError("accept() failed");
 		printf("Client socket is now connected to a client ... \n");
 
-		char fileBuffer[1000 + 2 + 256];			/* Buffer to read incoming file */
-		int receivedBytes = 0;						/* Size of received message */
+		unsigned long expectedBytes;
+		int receivedBytes = 0;
+
+		// Receive size of incoming data from client
+		if ((receivedBytes = recv(clientSocket, &expectedBytes, sizeof(long), 0)) < 0)
+			DieWithError("recv() failed");
+		printf("Received file size from client ... \n");
+
+		// Send response to the client to confirm
+		if (send(clientSocket, &expectedBytes, sizeof(long), 0) != sizeof(long))
+			DieWithError("send() failed");
+		printf("Sent confirmation that sever received expected bytes to client ... \n");
+
+		char fileBuffer[expectedBytes];			/* Buffer to read incoming file */
+		receivedBytes = 0;						/* Size of received message */
 
 		// Receive message from the client
-		if ((receivedBytes = recv(clientSocket, fileBuffer, 1000, 0)) < 0)
+		if ((receivedBytes = recv(clientSocket, fileBuffer, expectedBytes, 0)) < 0)
 			DieWithError("recv() failed");
 		printf("Received file from client ... \n");
 
@@ -77,9 +90,6 @@ int main(int argc, char* argv[]) {
 		printf("\n");
 		
 		if (receivedBytes > 0) {
-			char* buffer = NULL;
-			size_t bufferSize;
-
 			char toFormat;
 			memcpy(&toFormat, fileBuffer, 1);
 			printf("toFormat: %d\n", toFormat);
@@ -119,8 +129,7 @@ int main(int argc, char* argv[]) {
 				return -1;
 			}
 
-			// TODO: Pass tempIn, out and toFormat to Practice Project
-			// Get File status
+			// Get Write status
 			int writeStatus = writeUnits(tempIn, out, toFormat);
 
 			// Close the IN file
@@ -139,6 +148,18 @@ int main(int argc, char* argv[]) {
 				printf("Failed to delete file\n");
 			//--------------------------------------------------------------------------------
 
+			// Create the server response
+			char response = (char) writeStatus;
+
+			// Send the response to the client
+			int sentBytes = send(clientSocket, &response, sizeof(char), 0);
+			printf("Sent Bytes = %d\n", sentBytes);
+	/*
+			if (sentBytes != sizeof(char))
+				DieWithError("send() failed");
+	*/
+			printf("Sent response to client ... \n");
+
 			if (writeStatus < 0) {
 				// Delete the partially written file
 				removeStatus = remove(toName);
@@ -151,14 +172,6 @@ int main(int argc, char* argv[]) {
 			} else {
 				printf("File written on server...\n");	
 			}	
-
-			// Create the server response
-			char response = (char) writeStatus;
-
-			// Send the response to the client
-			if (send(clientSocket, &response, 1, 0) != 1)
-				DieWithError("send() failed");
-			printf("Sent response to client ... \n");
 		}
 		
 		// Close the client socket
