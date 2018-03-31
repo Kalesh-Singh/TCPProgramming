@@ -51,9 +51,14 @@ The client sends 2 messages to the server:
 + The second is a response with the contents of the file.
 
 #### Request ####
-This request to the sever to receive the file contains also contains client specified options that specify the secifies of the operation the sever should perform on the file to be received.  
-The server request has the following format:  
+This request to the sever to receive the file contains also contains client specified options that specify the operation the sever should perform on the file to be received. The client request has the following format:  
 ```toFormat``` ```toNameSize``` ```toName``` ```fileSize```  
+
+*Where:*
++ ```toFormat``` is one byte.
++ ```toNameSize``` is one byte and therefore if the size of ```toName``` is greater than ```256```, the client throws an error ```FILE NAME TOO LONG``` and terminates.
++ ```toName``` is the name of the file to which the data must be written to on the server.
++ ```fileSize``` is the size in bytes of the file to be received by the server.
 
 #### Response ####
 Upon receiving a response from the server. The client compares the received integer to the size of the options sent. If the two values are the same, the client response by sending the file containing the units to the server. The file is sent in chunks of 1 KB. Except for the last chunk which may be less. If the integer received is not the same size as the opions sent, the client throws an error an terminates.
