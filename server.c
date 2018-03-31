@@ -63,116 +63,121 @@ int main(int argc, char* argv[]) {
 			DieWithError("accept() failed");
 		printf("Client socket is now connected to a client ... \n");
 
-		unsigned long expectedBytes;
+		char optionsBuffer[400];	// Buffer to store the received options
 		int receivedBytes = 0;
 
-		// Receive size of incoming data from client
-		if ((receivedBytes = recv(clientSocket, &expectedBytes, sizeof(long), 0)) < 0)
+		// Receive options from client
+		if ((receivedBytes = recv(clientSocket, optionsBuffer, 400, 0)) < 0)
 			DieWithError("recv() failed");
-		printf("Received file size from client ... \n");
+		printf("Received options from client ... \n");
 
-		// Send response to the client to confirm
-		if (send(clientSocket, &expectedBytes, sizeof(long), 0) != sizeof(long))
+		// Parse the options
+		char toFormat;
+		memcpy(&toFormat, optionsBuffer, 1);
+		printf("toFormat: %d\n", toFormat);
+		unsigned char toNameSize;
+		memcpy(&toNameSize, optionsBuffer + 1, 1);
+		printf("toNameSize: %d\n", toNameSize);
+		char toName[toNameSize + 1];
+		memcpy(toName, optionsBuffer + 2, toNameSize);
+		toName[toNameSize] = '\0';
+		printf("toName: %s\n", toName);	
+		unsigned long fileSize;
+		memcpy(&fileSize, optionsBuffer + 2 + toNameSize, sizeof(long));
+		printf("File size: %lu\n", fileSize);
+
+		// Send response to the client to confirm that options were received
+		if (send(clientSocket, &receivedBytes, sizeof(int), 0) != sizeof(int))
 			DieWithError("send() failed");
-		printf("Sent confirmation that sever received expected bytes to client ... \n");
+		printf("Sent confirmation that sever received options to client ... \n");
 
-		char fileBuffer[expectedBytes];			/* Buffer to read incoming file */
-		receivedBytes = 0;						/* Size of received message */
-
-		// Receive message from the client
-		if ((receivedBytes = recv(clientSocket, fileBuffer, expectedBytes, 0)) < 0)
-			DieWithError("recv() failed");
-		printf("Received file from client ... \n");
-
-		// Print the received data
-		printf("\nReceived data\n\n");
-		printf("%s", fileBuffer);
-		printf("\n");
 		
-		if (receivedBytes > 0) {
-			char toFormat;
-			memcpy(&toFormat, fileBuffer, 1);
-			printf("toFormat: %d\n", toFormat);
-			unsigned char toNameSize;
-			memcpy(&toNameSize, fileBuffer + 1, 1);
-			printf("toNameSize: %d\n", toNameSize);
-			char toName[toNameSize + 1];
-			memcpy(toName, fileBuffer + 2, toNameSize);
-			toName[toNameSize] = '\0';
-			printf("%s\n", toName);	
-			printf("Data to be written: %s\n", fileBuffer + toNameSize + 2);
-		
-			// ---------------------------------------------------------------------------------
-			// Create IN file to be passed to practice project then delete it 
-			FILE* tempIn = fopen(".tempFile", "wb");
-			if (tempIn == NULL) {
-				perror("Failed to open file");
-				return -1;
+		// Create IN file to be passed to practice project then delete it 
+		FILE* tempIn = fopen(".tempFile", "wb");
+		if (tempIn == NULL) {
+			perror("Failed to open file");
+			return -1;
+		}
+
+		char fileBuffer[1000];						/* Buffer to read incoming file */
+		unsigned long receivedFileBytes = 0;		/* Size of received bytes */
+		unsigned long remainingBytes = fileSize;	/* Remaining bytes to recieve */
+
+		while (remainingBytes > 0) {
+			if (remainingBytes >= 1000) {
+				if ((receivedFileBytes = recv(clientSocket, fileBuffer, 1000, 0)) < 0)
+					DieWithError("recv() failed");
+			} else {
+				if ((receivedFileBytes = recv(clientSocket, fileBuffer, remainingBytes, 0)) < 0)
+					DieWithError("recv() failed");
 			}
 		
 			// Write the data to the file
-			fwrite(fileBuffer + toNameSize + 2, 1, receivedBytes - (toNameSize + 2), tempIn);
-			printf("Created temp file for processing...\n");
+			fwrite(fileBuffer, receivedFileBytes, 1, tempIn);
 
-			// Close the file
-			fclose(tempIn);
-			//----------------------------------------------------------------------------------
-			tempIn = fopen(".tempFile", "rb");
-			if (tempIn == NULL) {
-				perror("Failed to open IN file");
-				return -1;
-			}
-			
-			FILE* out = fopen(toName, "wb+");		// "wb+" because we also need to read to display the written data
-			if (out == NULL) {
-				perror("Failed to open OUT file");
-				return -1;
-			}
+			// Reduce the remaining bytes to receive
+			remainingBytes -= receivedFileBytes;
+		} 
 
-			// Get Write status
-			int writeStatus = writeUnits(tempIn, out, toFormat);
+		// Close the file
+		fclose(tempIn);
 
-			// Close the IN file
-			fclose(tempIn);
-			
-			// Close the OUT file
-			fclose(out);
-			
-			// Delete the .temp file
-			int removeStatus = remove(".tempFile");
-			printf("Remove status = %d\n", removeStatus);
-			
-			if (removeStatus == 0)
-				printf("Successfully deleted temp file\n");
-			else
-				printf("Failed to delete file\n");
-			//--------------------------------------------------------------------------------
+		printf("Received file from client ....\n");
 
-			// Create the server response
-			char response = (char) writeStatus;
-
-			// Send the response to the client
-			int sentBytes = send(clientSocket, &response, sizeof(char), 0);
-			printf("Sent Bytes = %d\n", sentBytes);
-	
-			if (sentBytes != sizeof(char))
-				DieWithError("send() failed");
-	
-			printf("Sent response to client ... \n");
-
-			if (writeStatus < 0) {
-				// Delete the partially written file
-				removeStatus = remove(toName);
-				printf("Remove status = %d\n", removeStatus);
-			
-				if (removeStatus == 0)
-					printf("Successfully deleted file that was partially created\n");
-				else
-					printf("Failed to delete created file\n");
-			} else {
-				printf("File written on server...\n");	
-			}	
+		//----------------------------------------------------------------------------------
+		tempIn = fopen(".tempFile", "rb");
+		if (tempIn == NULL) {
+			perror("Failed to open IN file");
+			return -1;
 		}
+		
+		FILE* out = fopen(toName, "wb+");		// "wb+" because we also need to read to display the written data
+		if (out == NULL) {
+			perror("Failed to open OUT file");
+			return -1;
+		}
+
+		// Get Write status
+		int writeStatus = writeUnits(tempIn, out, toFormat);
+		printf("\nWrote units to %s file ... \n", toName);
+
+		// Close the IN file
+		fclose(tempIn);
+		
+		// Close the OUT file
+		fclose(out);
+		
+		// Delete the .temp file
+		int removeStatus = remove(".tempFile");
+		// printf("Remove status = %d\n", removeStatus);
+		
+		if (removeStatus == 0)
+			printf("Successfully deleted .temp file\n");
+		else
+			printf("Failed to delete file\n");
+		//--------------------------------------------------------------------------------
+
+		// Create the server response
+		char response = (char) writeStatus;
+
+		// Send the response to the client
+		if (send(clientSocket, &response, sizeof(char), 0) != sizeof(char))
+			DieWithError("send() failed");
+		printf("Sent response to client ... \n");
+
+		if (writeStatus < 0) {
+			// Delete the partially written file
+			removeStatus = remove(toName);
+			// printf("Remove status = %d\n", removeStatus);
+		
+			if (removeStatus == 0)
+				printf("Successfully deleted %s file that was partially written.\n", toName);
+			else
+				printf("Failed to delete created file\n");
+		} else {
+			printf("File successfully written on server.\n");	
+		}	
+
 		
 		// Close the client socket
 		close(clientSocket);

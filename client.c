@@ -71,6 +71,7 @@ int main(int argc, char* argv[]) {
 	}
 	toNameSize = temp;
 	printf("Size of toName: %d\n", toNameSize);
+/*
 	
 	// Try to open the file at file path 
 	FILE* in = fopen(filePath, "rb");
@@ -106,16 +107,15 @@ int main(int argc, char* argv[]) {
 	printf("\n");
 	printf("------------------------------------------------------\n");
 	
-	// Close the file
-	fclose(in);
+	
+*/
 
 	int sock;									/* Socket descriptor */
 	struct sockaddr_in serverAddress;			/* Server address */
 
 	// Create a reliable, stream socket using TCP 
-	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)	{
+	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)	
 		DieWithError("socket() failed");
-	}
 
 	// Construct the server address structure
 	memset(&serverAddress, 0, sizeof(serverAddress));		/* Zero out struct */
@@ -124,35 +124,85 @@ int main(int argc, char* argv[]) {
 	serverAddress.sin_port = htons(serverPort);				/* Server port */
 
 	// Establish connection to the server
-	if (connect(sock, (struct sockaddr*) &serverAddress, sizeof(serverAddress)) < 0) {
+	if (connect(sock, (struct sockaddr*) &serverAddress, sizeof(serverAddress)) < 0)
 		DieWithError("connect() failed");
-	}
 	printf("Connection with server established ... \n");
 
-	// Send bytesToSend to server 
-	if (send(sock, &bytesToSend, sizeof(long), 0) != sizeof(long))
-		DieWithError("send() sent a different number of bytes than expected");
-	printf("Sent file size to server ...\n");
-
-	// Wait for confirmation that sever has received bytes to expect
-	int bytesReceived = 0;
-	unsigned long bytesExpected;
-	while (bytesReceived == 0) {
-		if((bytesReceived = recv(sock, &bytesExpected, 1, 0))<= 0)
-			DieWithError("recv() failed or connection closed permanently");
-		printf("Received Response from server ... \n");
+	// Try to open the file at file path 
+	FILE* in = fopen(filePath, "rb");
+	if (in == NULL) {
+		perror("Failed to open file");
+		return -1;
 	}
-	
-	if (bytesExpected == bytesToSend)
-		printf("Server correctly received size of incoming data\n");
-	else 
-		printf("Server did not receive correct data size to expect\n");
 
-	// Send file to server
-	if (send(sock, fileBuffer, bytesToSend, 0) != bytesToSend)
+	// Get the size of the file in bytes
+	fseek(in, 0L, SEEK_END);
+	unsigned long fileSize = ftell(in);
+	printf("File Size: %lu\n", fileSize);
+	rewind(in);
+
+	// Create a options buffer
+	char optionsBuffer[2 + toNameSize+ sizeof(long)];
+
+	// Populate the options buffer
+	memcpy(optionsBuffer, &toFormat, 1);			// Place toFormat in the optionsBuffer
+	memcpy(optionsBuffer + 1, &toNameSize, 1);		// Place toNameSize in the optionsBuffer
+	memcpy(optionsBuffer + 2, toName, toNameSize);	// Place toName in the optionsBuffer
+	// Place fileSize in the optionsBuffer
+	memcpy(optionsBuffer + 2 + toNameSize, &fileSize, sizeof(long));	
+
+	// Send options to server
+	if (send(sock, optionsBuffer, 2 + toNameSize + sizeof(long), 0) 
+		!= (toNameSize + 2 + sizeof(long)))
 		DieWithError("send() sent a different number of bytes than expected");
-	printf("Sent file to server ...\n");
+	printf("Sent options to server ...\n");
 
+	// Wait for Options acknowledgement from server
+	int bytesReceived = 0;
+	int optionsSizeAck;
+	while (bytesReceived == 0) {
+		if((bytesReceived = recv(sock, &optionsSizeAck, sizeof(int), 0)) <= 0)
+			DieWithError("recv() failed or connection closed permanently");
+		printf("Received Options ACK from server ... \n");
+	}
+
+	// Check the response
+	if (optionsSizeAck == (toNameSize + 2 + sizeof(long)))
+		printf("Server correctly received the options\n");
+	else {
+		printf("Server did not receive the correct options\n");
+		exit(1);
+	}
+
+	// Create a buffer to buffer one byte at a time
+	char buffer[1000];
+
+	// Intialize bytes sent to 0
+	unsigned long bytesSent = 0;
+	unsigned long remainingBytes = fileSize;	/* Remaining bytes to send */
+
+
+	while (remainingBytes > 0) {
+		if (remainingBytes >= 1000) {
+			fread(buffer, 1, 1000, in);
+			if ((bytesSent = send(sock, buffer, 1000, 0)) != 1000) {
+				printf("Sent bytes = %lu\n", bytesSent);
+				DieWithError("send() failed");	
+			}
+		} else {
+			fread(buffer, 1, remainingBytes, in);
+			if ((bytesSent = send(sock, buffer, remainingBytes, 0)) != remainingBytes)
+				DieWithError("send() failed");	
+		}
+		remainingBytes -= bytesSent;
+	}
+
+	printf("Sent file to server ...\n");
+	
+	// Close the file
+	fclose(in);
+
+	printf("Waiting for server to process file .... \n");
 	// Wait for response from server
 	char serverResponse;
 	bytesReceived = 0;
