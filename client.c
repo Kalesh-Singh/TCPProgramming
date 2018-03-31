@@ -167,6 +167,9 @@ int main(int argc, char* argv[]) {
 		printf("Success\n");
 	else if (serverResponse < 0)
 		printf("Format error\n");
+	
+	// Allow some time before closing the socket
+	sleep(1);
 
 	// Close the Socket
 	close(sock);

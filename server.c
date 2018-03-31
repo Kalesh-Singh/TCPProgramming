@@ -154,10 +154,10 @@ int main(int argc, char* argv[]) {
 			// Send the response to the client
 			int sentBytes = send(clientSocket, &response, sizeof(char), 0);
 			printf("Sent Bytes = %d\n", sentBytes);
-	/*
+	
 			if (sentBytes != sizeof(char))
 				DieWithError("send() failed");
-	*/
+	
 			printf("Sent response to client ... \n");
 
 			if (writeStatus < 0) {
