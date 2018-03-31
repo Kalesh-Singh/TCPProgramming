@@ -90,6 +90,10 @@ After inidcating that the options were correctly received, the server continuous
 | Rational | Input | Expected Output | Actual Output | Error Observed |
 | :------- | :---- | :-------------- | :------------ | :------------- |
 | Testing for correct operation | ```practice_project_test_file_1``` | ```Success``` | ```Success``` | None |
+| Testing for correct operation | ```practice_project_test_file_2``` | ```Success``` | ```Success``` | None |
+| Testing for Incorrect Type | ```test_incorrect_type``` | ```Format error``` | ```Format error``` | None |
+| Testing for Incorrect Amount | ```TODO``` | ```TODO``` | ```TODO``` | None |
+
  
 
 ## References ##
