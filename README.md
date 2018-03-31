@@ -78,3 +78,15 @@ After inidcating that the options were correctly received, the server continuous
 
 + If the file is correctly formatted the server performs the specified operations and responds with a byte containing the value ```0``` to the client. 
 + Else if the file is not correctly formatted, the server responds with a ```negative number``` depending on the type of format error detected.
+
+### Rules For Sending Messages ###
+TODO
+
+## Test Cases ##
+TODO
+
+## References ##
+TODO
+
+## Github Repository ##
+TODO
