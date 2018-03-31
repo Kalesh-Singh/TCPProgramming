@@ -51,7 +51,7 @@ The client sends 2 messages to the server:
 + The second is a response with the contents of the file.
 
 #### Request ####
-This request to the sever to receive the file contains also contains client specified options that specify the operation the sever should perform on the file to be received. The client request has the following format:  
+The request to the server to receive the file contains also contains client specified options that specify the operation the sever should perform on the file to be received. The client request has the following format:  
 ```toFormat``` ```toNameSize``` ```toName``` ```fileSize```  
 
 *Where:*
@@ -61,13 +61,21 @@ This request to the sever to receive the file contains also contains client spec
 + ```fileSize``` is the size in bytes of the file to be received by the server.
 
 #### Response ####
-Upon receiving a response from the server. The client compares the received integer to the size of the options sent. If the two values are the same, the client response by sending the file containing the units to the server. The file is sent in chunks of 1 KB. Except for the last chunk which may be less. If the integer received is not the same size as the opions sent, the client throws an error an terminates.
+Upon receiving a response from the server. The client compares the received integer response to the size of the options sent:
++ If the two values are the same, the client responds by sending the file containing the units to the server. The file is sent in chunks of 1 KB. Except for the last chunk which may be less.   
+	```Chunk 1``` ```Chunk 2```.... ```Chunk N```
++ If the integer received is not the same size as the opions sent, the client throws an error an terminates.
 
 ### Message Types for Server ###
-The server sends 2 response to the client.
+The server sends 2 responses to the client.
 
 #### Response 1 ####
-Upon receiving the options from the client the server send a response to client to indicate wheteher the options were correctly received or not. This is done by sending an integer value which is the amount of bytes received by the server.
+Upon receiving the ```options``` from the client the server send a response to client to indicate whether the ```options``` were correctly received or not. This is done by sending an integer value which is the amount of bytes received by the server.
 
 #### Response 2 ####
-After inidcating that the options were correctly received, the server continuously receives data from the client until it has received a total amount of bytes equal to that specified by ```fileSize``` in the received options. If the file is correctly formatted the server performs the specified operations and responds with a byte containing the value 0 to the server. Else it responds with a negative number depending on the type of format error detected.
+After inidcating that the options were correctly received, the server continuously receives data from the client until it has received a total amount of bytes equal to that specified by ```fileSize``` in the received options. 
++ If the file is correctly formatted the server performs the specified operations and responds with a byte containing the value ```0``` to the client. 
++ Else if the file is not correctly formatted, the server responds with a ```negative number``` depending on the type of format error detected.
+
+
+
