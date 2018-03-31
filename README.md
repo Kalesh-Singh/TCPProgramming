@@ -1,5 +1,5 @@
 # The Application Design #
-The TCP Application Protocol is used to send a file containing Units (as described below) from the client to server. The server receives the file and if it is correctly formatted it saves the file making any necessary conversions between units as specified by the client. The server sends a response to the client indicating whether the operation was successuful or not.
+The TCP Application Protocol is used to send a file containing Units (as described below) from the client to server. The server receives the file and if it is correctly formatted it saves the file making any necessary translations between units as specified by the client. The server sends a response to the client indicating whether the operation was successuful or not.
 
 ## Usage ##
 
@@ -25,10 +25,10 @@ The content of the input file is a sequence of units. Each unit has one of the f
 
 ```Type``` is one byte with the binary value 0 or 1. The first format always has ```Type``` as 0, and the second always has ```Type``` as 1.
 ##### Type 0 Units #####
-+ If ```Type``` is 0, the ```Amount``` is one byte. The binary value is the amount of numbers in the unit.
++ If ```Type``` is 0, the ```Amount``` is one byte. The binary value of ```Amount``` is the amount of numbers in the unit.
 + ```Number1``` through ```NumberN``` are the binary numbers, each taking 2 bytes.
 ##### Type 1 Units #####
-+ If ```Type``` is 1, the ```Amount``` is 3 bytes. The three ASCII characters shows is the amount of numbers in the unit. 
++ If ```Type``` is 1, the ```Amount``` is 3 bytes. The three ASCII characters shows the amount of numbers in the unit. 
 + ```Number1``` through ```NumberN``` are unsigned integers no more than 65535 represented in
 ASCII, separated by comma. There is no comma after the last number.
 
