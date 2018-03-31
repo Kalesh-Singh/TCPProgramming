@@ -4,7 +4,8 @@ The TCP Application Protocol is used to send a file containing Units (as describ
 ### File Format ###
 The content of the input file is a sequence of units. Each unit has one of the following two formats.
 + ```Type``` ```Amount``` ```Number1 Number2 ... NumberN```
-+ ```Type``` ```Amount``` ```Number1, Number2, ... , NumberN```
++ ```Type``` ```Amount``` ```Number1, Number2, ... , NumberN```  
+
 ```Type``` is one byte with the binary value 0 or 1. The first format always has ```Type``` as 0, and the second always has ```Type``` as 1.
 #### Type 0 Units ####
 + If ```Type``` is 0, the ```Amount``` is one byte. The binary value is the amount of numbers in the unit.
