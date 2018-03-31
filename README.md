@@ -18,28 +18,30 @@ The client should be invoked by the following command:
 + ```toFormat``` indicates how the server should translate the received units. ```0``` means no translation, ```1``` means to only translate ```Type 0``` units to ```Type 1``` with ```Type 1``` units unchanged, ```2``` means to only translate ```Type 1``` units to ```Type 0``` with ```Type 0``` units unchanged, and ```3``` means to translate ```Type 0``` to ```Type 1``` and ```Type 1``` to ```Type 0```. 
 + ```toName``` is the name of the file the server should save the units to.
 
-### Server ###
-The server can be compiled using the command:  
-```gcc server.c helper.h helper.c -o server```  
-
-The server should be invoked by the following command:  
-```./server``` ```port```
-*Where:*
-+ ```server``` is the name of the server executable file name.
-+ ```port``` is the port the server listens to.
-### File Format ###
+#### File Format ####
 The content of the input file is a sequence of units. Each unit has one of the following two formats.
 + ```Type``` ```Amount``` ```Number1 Number2 ... NumberN```
 + ```Type``` ```Amount``` ```Number1, Number2, ... , NumberN```  
 
 ```Type``` is one byte with the binary value 0 or 1. The first format always has ```Type``` as 0, and the second always has ```Type``` as 1.
-#### Type 0 Units ####
+##### Type 0 Units #####
 + If ```Type``` is 0, the ```Amount``` is one byte. The binary value is the amount of numbers in the unit.
 + ```Number1``` through ```NumberN``` are the binary numbers, each taking 2 bytes.
-#### Type 1 Units ####
+##### Type 1 Units #####
 + If ```Type``` is 1, the ```Amount``` is 3 bytes. The three ASCII characters shows is the amount of numbers in the unit. 
 + ```Number1``` through ```NumberN``` are unsigned integers no more than 65535 represented in
 ASCII, separated by comma. There is no comma after the last number.
+
+### Server ###
+The server can be compiled using the command:  
+```gcc server.c helper.h helper.c -o server```  
+
+The server should be invoked by the following command:  
+```./server``` ```port```  
+
+*Where:*
++ ```server``` is the name of the server executable file name.
++ ```port``` is the port the server listens to.
 
 ## Protocol ##
 
