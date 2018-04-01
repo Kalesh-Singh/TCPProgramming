@@ -71,44 +71,6 @@ int main(int argc, char* argv[]) {
 	}
 	toNameSize = temp;
 	printf("Size of toName: %d\n", toNameSize);
-/*
-	
-	// Try to open the file at file path 
-	FILE* in = fopen(filePath, "rb");
-	if (in == NULL) {
-		perror("Failed to open file");
-		return -1;
-	}
-
-	// Get the size of the file in bytes
-	fseek(in, 0L, SEEK_END);
-	unsigned long fileSize = ftell(in);
-	printf("File Size: %lu\n", fileSize);
-	rewind(in);
-	
-	// Calculate the total bytes to send
-	unsigned long bytesToSend = 1 + 1 + toNameSize + fileSize;
-
-	// Create a write buffer
-	char fileBuffer[bytesToSend];
-
-	// Populate the buffer with the data from the file
-	memcpy(fileBuffer, &toFormat, 1);			// Place toFormat in the fileBuffer
-	memcpy(fileBuffer + 1, &toNameSize, 1);		// Place toNameSize in the fileBuffer
-	memcpy(fileBuffer + 2, toName, toNameSize);	// Place toName in the fileBuffer
-	fread(fileBuffer + 2 + toNameSize, 1, fileSize, in);	// Place file contents in file buffer
-
-	printf("------------------------------------------------------\n");
-	printf("\nFile Data\n\n");
-	int i;
-	for (i = 0; i < bytesToSend; ++i) {
-		printf("%c", fileBuffer[i]);
-	}
-	printf("\n");
-	printf("------------------------------------------------------\n");
-	
-	
-*/
 
 	int sock;									/* Socket descriptor */
 	struct sockaddr_in serverAddress;			/* Server address */

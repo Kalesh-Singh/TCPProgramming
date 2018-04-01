@@ -124,7 +124,6 @@ int main(int argc, char* argv[]) {
 
 		printf("Received file from client ....\n");
 
-		//----------------------------------------------------------------------------------
 		tempIn = fopen(".tempFile", "rb");
 		if (tempIn == NULL) {
 			perror("Failed to open IN file");
@@ -155,7 +154,6 @@ int main(int argc, char* argv[]) {
 			printf("Successfully deleted .temp file\n");
 		else
 			printf("Failed to delete file\n");
-		//--------------------------------------------------------------------------------
 
 		// Create the server response
 		char response = (char) writeStatus;
