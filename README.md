@@ -87,17 +87,19 @@ After inidcating that the options were correctly received, the server continuous
 
 ## Test Cases ##
 
-| Rational | Input | Expected Output | Actual Output | Error Observed |
+| Rational | Input File | Expected Output | Actual Output | Error Observed |
 | :------- | :---- | :-------------- | :------------ | :------------- |
 | Testing for correct operation | ```practice_project_test_file_1``` | ```Success``` | ```Success``` | None |
 | Testing for correct operation | ```practice_project_test_file_2``` | ```Success``` | ```Success``` | None |
 | Testing for Incorrect Type | ```test_incorrect_type``` | ```Format error``` | ```Format error``` | None |
 | Testing for Incorrect Amount (Non-Numeric ASCII Value in Type 1 Amount) | ```test_incorrect_amount``` | ```Format error``` | ```Format error``` | None |
-
- 
+| Testing for Incorrect Number (Non-Numeric ASCII Value in Type 1 Number) | ```test_incorrect_number``` | ```Format error``` | ```Format error``` | None |
+| Testing for Consecutive Commas (In Type 1 Numbers) | ```test_consecutive_commas``` | ```Format error``` | ```Format error``` | None |
+| Testing for Empty File | ```test_empty_file``` | ```Success``` | ```Success``` | None |
 
 ## References ##
 TODO
 
 ## Github Repository ##
-TODO
+<https://github.com/ZonalWings/TCPProgramming>
+
