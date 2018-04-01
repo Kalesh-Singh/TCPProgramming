@@ -98,7 +98,7 @@ After inidcating that the options were correctly received, the server continuous
 | Testing for Empty File | ```test_empty_file``` | ```Success``` | ```Success``` | None |
 
 ## References ##
-TODO
++ Donahoo, M. J., & Calvert, K. L. (2001). TCP/IP SOCKETS IN C: Practical Guide for Programmers (The Practical Guide Series). San Francisco, CA: Morgan Kaufmann.
 
 ## Github Repository ##
 <https://github.com/ZonalWings/TCPProgramming>
