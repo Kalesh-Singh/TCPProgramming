@@ -80,7 +80,7 @@ After inidcating that the options were correctly received, the server continuous
 + Else if the file is not correctly formatted, the server responds with a ```negative number``` depending on the type of format error detected.
 
 ### Rules For Sending Messages ###
-+ Upon establishing aconnection the client sends a ```Request``` to the server to receive the file.
++ Upon establishing a connection the client sends a ```Request``` to the server to receive the file.
 + The server sends a ```Response``` to the client acknowledging that it correctly received the ```options``` contained in the client's ```Request```.
 + Upon receiving the server's response acknowledging that it correctly received the ```options```, the client ```Responds``` by sending the file to the server.
 + Upon receiving the file from the cilent, the server sends a ```Response``` to the client indicating whether the received file was incorrectly formatted or that the requested translation was successful.
