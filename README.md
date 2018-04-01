@@ -86,6 +86,7 @@ After inidcating that the options were correctly received, the server continuous
 + Upon receiving the file from the cilent, the server sends a ```Response``` to the client indicating whether the received file was incorrectly formatted or that the requested translation was successful.
 
 ## Test Cases ##
+  
 
 | Rational | Input File | Expected Output | Actual Output | Error Observed |
 | :------- | :---- | :-------------- | :------------ | :------------- |
