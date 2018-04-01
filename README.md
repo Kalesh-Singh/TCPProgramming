@@ -98,8 +98,8 @@ The Input files used in the test can be found in the ```test_cases``` folder in 
 | Testing for Consecutive Commas (In Type 1 Numbers) | ```test_consecutive_commas``` | ```Format error``` | ```Format error``` | None |
 | Testing for Empty File | ```test_empty_file``` | ```Success``` | ```Success``` | None |
 
-## Known Problems ##
-
+## Problems ##
++ There are no known problems with the client or server applications at present.
 
 ## References ##
 + Donahoo, M. J., & Calvert, K. L. (2001). TCP/IP SOCKETS IN C: Practical Guide for Programmers (The Practical Guide Series). San Francisco, CA: Morgan Kaufmann.
