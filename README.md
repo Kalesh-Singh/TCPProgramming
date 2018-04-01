@@ -86,7 +86,8 @@ After inidcating that the options were correctly received, the server continuous
 + Upon receiving the file from the cilent, the server sends a ```Response``` to the client indicating whether the received file was incorrectly formatted or that the requested translation was successful.
 
 ## Test Cases ##
-  
+The Input files used in the test can be found in the ```test_cases``` folder in the GitHub Repository.  
+
 
 | Rational | Input File | Expected Output | Actual Output | Error Observed |
 | :------- | :---- | :-------------- | :------------ | :------------- |
