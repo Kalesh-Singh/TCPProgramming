@@ -86,7 +86,7 @@ After inidcating that the options were correctly received, the server continuous
 + Upon receiving the file from the cilent, the server sends a ```Response``` to the client indicating whether the received file was incorrectly formatted or that the requested translation was successful.
 
 ## Test Cases ##
-The Input files used in the test can be found in the ```test_cases``` folder in the [GitHub Repository] (https://github.com/ZonalWings/TCPProgramming)  
+The Input files used in the test can be found in the ```test_cases``` folder in the [GitHub Repository](https://github.com/ZonalWings/TCPProgramming)  
 
 | Rationale | Input File | Expected Output | Actual Output | Error Observed |
 | :------- | :---- | :-------------- | :------------ | :------------- |
@@ -105,7 +105,7 @@ The Input files used in the test can be found in the ```test_cases``` folder in 
 + Donahoo, M. J., & Calvert, K. L. (2001). TCP/IP SOCKETS IN C: Practical Guide for Programmers (The Practical Guide Series). San Francisco, CA: Morgan Kaufmann.
 
 ## Github Repository ##
-[TCP Socket Programming] (https://github.com/ZonalWings/TCPProgramming)
+[TCP Socket Programming](https://github.com/ZonalWings/TCPProgramming)
 
 ## Contributors ##
 + Kaleshwar Singh
