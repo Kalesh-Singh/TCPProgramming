@@ -86,10 +86,9 @@ After inidcating that the options were correctly received, the server continuous
 + Upon receiving the file from the cilent, the server sends a ```Response``` to the client indicating whether the received file was incorrectly formatted or that the requested translation was successful.
 
 ## Test Cases ##
-The Input files used in the test can be found in the ```test_cases``` folder in the GitHub Repository.  
+The Input files used in the test can be found in the ```test_cases``` folder in the [GitHub Repository]: https://github.com/ZonalWings/TCPProgramming  
 
-
-| Rational | Input File | Expected Output | Actual Output | Error Observed |
+| Rationale | Input File | Expected Output | Actual Output | Error Observed |
 | :------- | :---- | :-------------- | :------------ | :------------- |
 | Testing for correct operation | ```practice_project_test_file_1``` | ```Success``` | ```Success``` | None |
 | Testing for correct operation | ```practice_project_test_file_2``` | ```Success``` | ```Success``` | None |
@@ -99,11 +98,14 @@ The Input files used in the test can be found in the ```test_cases``` folder in 
 | Testing for Consecutive Commas (In Type 1 Numbers) | ```test_consecutive_commas``` | ```Format error``` | ```Format error``` | None |
 | Testing for Empty File | ```test_empty_file``` | ```Success``` | ```Success``` | None |
 
+## Known Problems ##
+
+
 ## References ##
 + Donahoo, M. J., & Calvert, K. L. (2001). TCP/IP SOCKETS IN C: Practical Guide for Programmers (The Practical Guide Series). San Francisco, CA: Morgan Kaufmann.
 
 ## Github Repository ##
-<https://github.com/ZonalWings/TCPProgramming>
+[TCP Socket Programming]: https://github.com/ZonalWings/TCPProgramming
 
 ## Contributors ##
 + Kaleshwar Singh

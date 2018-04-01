@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
 	if (optionsSizeAck == (toNameSize + 2 + sizeof(long)))
 		printf("Server correctly received the options\n");
 	else {
-		printf("Server did not receive the correct options\n");
+		printf("ERROR SENDING OPTIONS: Server did not receive the correct options\n");
 		exit(1);
 	}
 
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
 	unsigned long bytesSent = 0;
 	unsigned long remainingBytes = fileSize;	/* Remaining bytes to send */
 
-
+	// Send the file to the server
 	while (remainingBytes > 0) {
 		if (remainingBytes >= 1000) {
 			fread(buffer, 1, 1000, in);
